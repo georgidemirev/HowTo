@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    stages {
+        stage("Build applications") {
+            steps {
+				sh 'docker build ./demirev-business -t demirev_business:latest'
+				sh 'docker build ./demirev-user -t demirev_user:latest'
+            }
+        }
+		
+        stage("Stop containers") {
+            steps {
+                sh 'docker-compose -f docker-compose.all-deprecated.yml -p demirev down'
+            }
+        }
+
+        stage("Start DB container") {
+            steps {
+                sh 'docker-compose -f docker-compose.db.yml -p demirev up -d'
+            }
+        }
+		
+        stage("DB migration") {
+            steps {
+                dir ('demirev-db-migration') {
+                    sh 'mvn flyway:migrate'
+                }
+            }
+        }
+		
+		stage("Start applications") {
+            steps {
+                sh 'docker-compose -f docker-compose.apps.yml -p demirev up -d'
+            }
+        }
+    }
+}

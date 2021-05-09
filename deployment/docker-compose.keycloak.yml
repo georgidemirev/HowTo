@@ -1,0 +1,25 @@
+version: '3.5'
+services:
+  
+  keycloak:
+    image: quay.io/keycloak/keycloak:12.0.4
+    environment:
+      DB_VENDOR: MYSQL
+      DB_ADDR: db
+      DB_DATABASE: demirev
+      DB_USER: root
+      DB_PASSWORD: 'root'
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    networks:
+      - demirev
+    ports:
+      - 8082:8080
+
+networks:
+  demirev:
+    name: demirev
+    driver: bridge
+    
+volumes:
+  my-db:

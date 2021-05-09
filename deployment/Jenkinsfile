@@ -1,0 +1,18 @@
+pipeline {
+    agent any
+
+    stages {
+        stage("Build applications") {
+            steps {
+				sh 'docker build ./demirev-business -t demirev_business:latest'
+				sh 'docker build ./demirev-user -t demirev_user:latest'
+            }
+        }
+		
+		stage("Start applications") {
+            steps {
+                sh 'docker-compose -f docker-compose.apps.yml -p demirev up -d'
+            }
+        }
+    }
+}

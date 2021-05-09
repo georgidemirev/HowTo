@@ -1,0 +1,43 @@
+version: '3.5'
+services:
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:12.0.4
+    environment:
+      DB_VENDOR: MYSQL
+      DB_ADDR: db
+      DB_DATABASE: demirev
+      DB_USER: root
+      DB_PASSWORD: 'root'
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    networks:
+      - demirev
+    ports:
+      - 8082:8080
+  
+  business:
+    build: ./demirev-business
+    networks:
+      - demirev
+    ports:
+      - 8232:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/demirev?useSSL=false
+
+  user:
+    build: ./demirev-user
+    networks:
+      - demirev
+    ports:
+      - 8231:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/demirev?useSSL=false
+      
+networks:
+  demirev:
+    name: demirev
+    driver: bridge
+    
+volumes:
+  my-db:

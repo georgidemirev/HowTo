@@ -1,0 +1,65 @@
+version: '3.5'
+services:
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'demirev'
+      MYSQL_USER: 'root'
+      MYSQL_ROOT_PASSWORD: 'root'
+    networks:
+      - demirev
+    ports:
+      - '3307:3306'
+    expose:
+      - '3307'
+    volumes:
+      - my-db:/var/lib/mysql
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:12.0.4
+    environment:
+      DB_VENDOR: MYSQL
+      DB_ADDR: db
+      DB_DATABASE: demirev
+      DB_USER: root
+      DB_PASSWORD: 'root'
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    networks:
+      - demirev
+    ports:
+      - 8082:8080
+    depends_on:
+      - db
+  
+  business:
+    build: ./demirev-business
+    networks:
+      - demirev
+    ports:
+      - 8232:8080
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/demirev?useSSL=false
+
+  user:
+    build: ./demirev-user
+    networks:
+      - demirev
+    ports:
+      - 8231:8080
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/demirev?useSSL=false
+
+networks:
+  demirev:
+    name: demirev
+    driver: bridge
+    
+volumes:
+  my-db:
